@@ -1,3 +1,4 @@
+import os
 import argparse as ap
 import cv2
 import numpy as np
@@ -52,7 +53,10 @@ if __name__ == "__main__":
         vw = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
         vh = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
         print("Video size", vw,vh)
-        out_video = cv2.VideoWriter(args.video.replace(".mp4", "_pred.mp4"),fourcc,20.0,(vw,vh))
+        input_fname = os.path.basename(args.video)
+        os.makedirs("output", exist_ok=True)
+        output_path = os.path.join("output", input_fname.replace(".mp4", "_pred.mp4"))
+        out_video = cv2.VideoWriter(output_path, fourcc, 20.0, (vw,vh))
 
     while True:
         ret, frame = vid.read()
@@ -76,7 +80,7 @@ if __name__ == "__main__":
             cv2.imshow('frame', res_img)
             if cv2.waitKey(1) == ord('q'):
                 break
-            pbar.update(1)
+        pbar.update(1)
 
     pbar.close()
     vid.release()
