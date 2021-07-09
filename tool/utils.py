@@ -122,10 +122,11 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
             rgb = color
         else:
             rgb = (255, 0, 0)
-        if len(box) >= 7 and class_names:
-            cls_conf = box[5]
-            cls_id = box[6]
-            print('%s: %f' % (class_names[cls_id], cls_conf))
+        if len(box) >= 6 and class_names:
+            # cls_conf = box[4]
+            obj_id = int(box[4])
+            cls_id = int(box[5])
+            # print('%s: %f' % (class_names[cls_id], cls_conf))
             classes = len(class_names)
             offset = cls_id * 123457 % classes
             red = get_color(2, offset, classes)
@@ -133,8 +134,8 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
             blue = get_color(0, offset, classes)
             if color is None:
                 rgb = (red, green, blue)
-            img = cv2.putText(img, class_names[cls_id], (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1.2, rgb, 1)
-        img = cv2.rectangle(img, (x1, y1), (x2, y2), rgb, 1)
+            img = cv2.putText(img, class_names[cls_id]+"-"+str(obj_id), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1.2, rgb, 2)
+        img = cv2.rectangle(img, (x1, y1), (x2, y2), rgb, 2)
     if savename:
         print("save plot results to %s" % savename)
         cv2.imwrite(savename, img)
@@ -218,16 +219,16 @@ def post_processing(img, conf_thresh, nms_thresh, output):
                 ll_max_id = ll_max_id[keep]
 
                 for k in range(ll_box_array.shape[0]):
-                    bboxes.append([ll_box_array[k, 0], ll_box_array[k, 1], ll_box_array[k, 2], ll_box_array[k, 3], ll_max_conf[k], ll_max_conf[k], ll_max_id[k]])
+                    bboxes.append([ll_box_array[k, 0], ll_box_array[k, 1], ll_box_array[k, 2], ll_box_array[k, 3], ll_max_conf[k], ll_max_id[k]])
         
         bboxes_batch.append(bboxes)
 
     t3 = time.time()
 
-    print('-----------------------------------')
-    print('       max and argmax : %f' % (t2 - t1))
-    print('                  nms : %f' % (t3 - t2))
-    print('Post processing total : %f' % (t3 - t1))
-    print('-----------------------------------')
+#     print('-----------------------------------')
+#     print('       max and argmax : %f' % (t2 - t1))
+#     print('                  nms : %f' % (t3 - t2))
+#     print('Post processing total : %f' % (t3 - t1))
+#     print('-----------------------------------')
     
     return bboxes_batch
