@@ -60,6 +60,9 @@ if __name__ == "__main__":
 
     while True:
         ret, frame = vid.read()
+        if not ret:
+            break
+
         sized = cv2.resize(frame, (model.width, model.height))
         sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
 
