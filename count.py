@@ -46,11 +46,13 @@ if __name__ == "__main__":
     parser.add_argument("--use-cuda", action="store_true")
     args = parser.parse_args()
 
+    print(f'Loading model config from {args.cfg}')
     model = Darknet(args.cfg)
-    model.print_network()
+    # model.print_network()
     model.load_weights(args.weights)
     print(f'Loading weights from {args.weights}')
     if args.use_cuda:
+        print(f'Using cuda')
         model.cuda()
 
     num_classes = model.num_classes
