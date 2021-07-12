@@ -64,10 +64,9 @@ if __name__ == "__main__":
         namesfile = 'data/x.names'
     class_names = load_class_names(namesfile)
 
-    tracker = Sort()
+    tracker = Sort(max_age=1000, min_hits=3)
     vid = cv2.VideoCapture(args.video)
     num_frames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
-    pbar = tqdm(total=num_frames)
 
     if args.save_output:
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -80,9 +79,10 @@ if __name__ == "__main__":
         out_video = cv2.VideoWriter(output_path, fourcc, 20.0, (vw,vh))
 
     # NOTE: Change these for different videos
-    slope = 0.15
+    slope = 0.3
     intercept = 200
 
+    pbar = tqdm(total=num_frames)
     while True:
         ret, frame = vid.read()
         if not ret:
