@@ -11,7 +11,26 @@ from tool.torch_utils import do_detect
 from sort import Sort
 
 
-def filter_objects(boxes):
+def draw_line(img, slope=1, intercept=0):
+    xs = np.arange(img.shape[1])
+    ys = (slope * xs + intercept).astype(np.int)
+    keep = ys < img.shape[0]
+    xs = xs[keep]
+    ys = ys[keep]
+    img[ys, xs, :] = (0, 0, 255)
+
+
+def filter_objects_by_line(boxes, img, slope=1, intercept=0):
+    width = img.shape[1]
+    height = img.shape[0]
+    # bottom right corners
+    xs_br = boxes[:, 0] * width
+    ys_br = boxes[:, 3] * height
+    keep = ys_br > (slope * xs_br + intercept).astype(np.int)
+    return boxes[keep]
+
+
+def filter_objects_by_class(boxes):
     # [bicycle, car, motorbike, bus, truck]
     included_classes = [1, 2, 3, 5, 7]
     keep = np.isin(boxes[:, 5].astype(np.int), included_classes)
@@ -58,6 +77,10 @@ if __name__ == "__main__":
         output_path = os.path.join("output", input_fname.replace(".mp4", "_pred.mp4"))
         out_video = cv2.VideoWriter(output_path, fourcc, 20.0, (vw,vh))
 
+    # NOTE: Change these for different videos
+    slope = 0.15
+    intercept = 200
+
     while True:
         ret, frame = vid.read()
         if not ret:
@@ -67,10 +90,12 @@ if __name__ == "__main__":
         sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
 
         boxes = do_detect(model, sized, 0.4, 0.6, use_cuda=args.use_cuda)[0]
-        boxes = filter_objects(np.array(boxes))
+        boxes = filter_objects_by_class(np.array(boxes))
+        boxes = filter_objects_by_line(boxes, frame, slope, intercept)
         tracked_boxes = tracker.update(boxes)
 
         res_img = plot_boxes_cv2(frame, tracked_boxes, class_names=class_names)
+        draw_line(res_img, slope, intercept)
         count_str = ", ".join(
             [f"{class_names[k]}: {v}" for k, v in tracker.object_counts.items()]
         )
